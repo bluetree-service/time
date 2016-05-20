@@ -1,13 +1,9 @@
 <?php
-/**
- * allow to manipulate date as object
- *
- * @package     Core
- * @subpackage  Date
- * @author      chajr   <chajr@bluetree.pl>
- */
-namespace Core\Time\Helper;
-use Core\Time\Helper\Simple\Date as SimpleDate;
+
+namespace Time;
+
+use Time\Simple\Date as SimpleDate;
+
 class Date
 {
     /**

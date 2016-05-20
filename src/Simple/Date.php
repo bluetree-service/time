@@ -1,12 +1,6 @@
 <?php
-/**
- * allow to make simple date manipulations
- *
- * @package     Core
- * @subpackage  Date
- * @author      chajr   <chajr@bluetree.pl>
- */
-namespace Core\Time\Helper\simple;
+namespace Time\Simple;
+
 class Date
 {
     /**
