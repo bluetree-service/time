@@ -1,8 +1,8 @@
 <?php
 
-namespace Time;
+namespace BlueTime;
 
-use Time\Simple\Date as SimpleDate;
+use BlueTime\Simple\Date as SimpleDate;
 
 class Date
 {

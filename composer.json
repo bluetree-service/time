@@ -15,11 +15,24 @@
         }
     ],
     "require": {
-        "php": ">=5.4.0"
+        "php": "^8.2"
     },
     "autoload": {
         "psr-4": {
-            "Time\\": "src/"
+            "BlueTime\\": "src/"
         }
+    },
+    "scripts": {
+        "test": "./vendor/bin/phpunit --display-warnings",
+        "coverage": "./vendor/bin/phpunit --display-warnings --coverage-clover build/logs/clover.xml",
+        "clover-report": "./vendor/bin/clover_reporter -c build/logs/clover.xml",
+        "clover-report-full": "./vendor/bin/clover_reporter -f build/logs/clover.xml",
+        "test-complete": [
+            "@coverage"
+        ]
+    },
+    "require-dev": {
+        "bluetree-service/clover-reporter": "^0.3.1",
+        "phpunit/phpunit": "^11.5"
     }
 }

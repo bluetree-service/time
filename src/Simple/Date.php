@@ -1,5 +1,5 @@
 <?php
-namespace Time\Simple;
+namespace BlueTime\Simple;
 
 class Date
 {
@@ -11,7 +11,7 @@ class Date
     */
     static function getFormattedTime($stamp = NULL)
     {
-        $cfg = '%H:%M:%S - %d-%m-%Y';
+        $cfg = '%Y-%m-%d - %H:%M:%S';
 
         if (!$stamp) {
             $stamp = time();
@@ -354,8 +354,8 @@ class Date
         if (is_array($stamp)) {
 
             $month  = $stamp[1];
-            $year   = $stamp[2];
-            $day    = $stamp[0];
+            $year   = $stamp[0];
+            $day    = $stamp[2];
 
         } else {
 
@@ -368,7 +368,7 @@ class Date
             $day    = self::getDay($stamp);
         }
 
-        return checkdate($month, $day, $year );
+        return checkdate($month, $day, $year);
     }
 
     /**
