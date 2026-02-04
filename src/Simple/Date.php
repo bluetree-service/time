@@ -1,340 +1,213 @@
 <?php
+
+declare(strict_types=1);
+
 namespace BlueTime\Simple;
+
+use function time;
+use function date;
+use function mktime;
+use function getdate;
+use function checkdate;
 
 class Date
 {
     /**
      * return formatted current time
-     * 
-     * @param integer $stamp optionaly unix timestamp
+     *
+     * @param int|null $stamp optionally unix timestamp
      * @return string
     */
-    static function getFormattedTime($stamp = NULL)
+    public static function getFormattedTime(?int $stamp = null): string
     {
-        $cfg = '%Y-%m-%d - %H:%M:%S';
+        $cfg = 'Y-m-d - H:i:s';
 
         if (!$stamp) {
             $stamp = time();
         }
 
-        return strftime($cfg, $stamp);
+        return date($cfg, $stamp);
     }
 
-    /**return date formatted in dd-mm-yyyy or in yyyy-mm-dd
-     * 
-     * @param integer|boolean $stamp optionally unix timestamp
-     * @param boolean $yearFirst type of returned date, if TRUE year will be first
+    /** return date formatted in dd-mm-yyyy or in yyyy-mm-dd
+     *
+     * @param int|null $stamp optionally unix timestamp
+     * @param bool $yearLast type of returned date, if true year will be last
      * @return string
-     * @example getDate(FALSE, TRUE)
+     * @example getDate(null, true)
      * @example getDate()
      * @example getDate(2354365346)
      */
-    static function getDate($stamp = FALSE, $yearFirst = FALSE)
+    public static function getDate(?int $stamp = null, bool $yearLast = false): string
     {
         if (!$stamp) {
             $stamp = time();
         }
 
-        if ($yearFirst) {
-            return strftime('%Y-%m-%d', $stamp);
+        if ($yearLast) {
+            return date('d-m-Y', $stamp);
         }
 
-        return strftime('%d-%m-%Y', $stamp);
+        return date('Y-m-d', $stamp);
     }
 
     /**
      * return time in hh-mm-ss format
-     * 
-     * @param integer $stamp optionally unix timestamp
+     *
+     * @param int|null $stamp optionally unix timestamp
      * @return string
      */
-    static function getTime($stamp = NULL)
+    public static function getTime(?int $stamp = null): string
     {
         if (!$stamp) {
             $stamp = time();
         }
 
-        return strftime('%H:%M:%S', $stamp);
+        return date('H:i:s', $stamp);
     }
 
     /**
      * return name of month
      * in example, month length = 2764800s (60*60*24*32)
-     * 
-     * @param integer|boolean $stamp optionally unix timestamp
-     * @param boolean $short if TRUE return name in short version
+     *
+     * @param int|null|array $stamp optionally unix timestamp
+     * @param bool $short if true return name in short version
      * @return string
      * @example monthName() - current month name
      * @example monthName(254543534); - name of month from given timestamp
-     * @example monthName('8'); - will return August
-     * @example monthName('13'); - return January (> 12 is take as timestamp)
+     * @example monthName(array(12, 12, 1983)) - name of month from given date array
      */
-    public static function getMonthName($stamp = FALSE, $short = FALSE)
+    public static function getMonthName(null|array|int $stamp = null, bool $short = false): string
     {
+        $monthType = 'F';
+
+        if (\is_array ($stamp)) {
+            $stamp = self::convertToDate($stamp);
+        }
+
         if (!$stamp) {
             $stamp = time();
         }
 
         if ($short) {
-            $monthType = '%b';
-        } else {
-            $monthType = '%B';
+            $monthType = 'M';
         }
 
-        if (is_string($stamp)) {
-            switch ($stamp){
-                case '1':
-                    return strftime($monthType, 1);
-                    break;
-
-                case '2':
-                    return strftime($monthType, 2764800);
-                    break;
-
-                case '3':
-                    return strftime($monthType, 5529600);
-                    break;
-
-                case '4':
-                    return strftime($monthType, 8294400);
-                    break;
-
-                case '5':
-                    return strftime($monthType, 11059200);
-                    break;
-
-                case '6':
-                    return strftime($monthType, 13824000);
-                    break;
-
-                case '7':
-                    return strftime($monthType, 16588800);
-                    break;
-
-                case '8':
-                    return strftime($monthType, 19353600);
-                    break;
-
-                case '9':
-                    return strftime($monthType, 22118400);
-                    break;
-
-                case '10':
-                    return strftime($monthType, 24883200);
-                    break;
-
-                case '11':
-                    return strftime($monthType, 27648000);
-                    break;
-
-                case '12':
-                    return strftime($monthType, 30412800);
-                    break;
-
-                default:
-                    return strftime($monthType, $stamp);
-                    break;
-            }
-        }
-
-        return strftime($monthType, $stamp);
+        return date($monthType, $stamp);
     }
 
     /**
      * return day name in week
      * in example, day length = 90000s (60*60*22)
-     * 
-     * @param integer|array|string|boolean $stamp unix timestamp or array (day, month, year) or day number as string
-     * @param boolean $short if TRUE will return a short version of day name
-     * @return mixed day name, or its number in week, or FALSE if wrong data was given
+     *
+     * @param int|null|array $stamp unix timestamp or array (day, month, year) or day number as string
+     * @param bool $short if true will return a short version of day name
+     * @return string day name
+     * @example getDayName();
      * @example getDayName(23424234);
      * @example getDayName(array(12, 12, 1983))
-     * @example getDayName(0); - sunday
-     * @example getDayName('0', TRUE); - sunday, short version
      */
-    static function getDayName($stamp = NULL, $short = NULL)
+    public static function getDayName(null|int|array $stamp = null, bool $short = false): string
     {
-        if (is_string($stamp)) {
-            $tab['wday'] = $stamp;
-        } else {
+        $dayType = 'l';
 
-            if (!$stamp ){
-                $stamp = time();
-
-            } elseif (is_array ($stamp)) {
-                $stamp = mktime(0, 0, 0, $stamp[1], $stamp[0], $stamp[2]);
-            }
-
-            $tab = getdate($stamp);
-        }
-
-        if ($short) {
-            $short = '%a';
-        } else {
-            $short = '%A';
-        }
-
-        switch ($tab['wday']) {
-            case '0':
-                return strftime($short, 1312077709);
-                break;
-
-            case '1':
-                return strftime($short, 1312167709);
-                break;
-
-            case '2':
-                return strftime($short, 1312257709);
-                break;
-
-            case '3':
-                return strftime($short, 1312347709);
-                break;
-
-            case '4':
-                return strftime($short, 1312437709);
-                break;
-
-            case '5':
-                return strftime($short, 1312527709);
-                break;
-
-            case '6':
-                return strftime($short, 1312617709);
-                break;
-        }
-
-        return FALSE;
-    }
-
-    /**
-     * return number of day in year (from 1 to 356)
-     * number of month or day in year without 0 at start
-     * 
-     * @param string|array $data unix timestamp or array (day, month, year)
-     * @return integer
-     * @example getDayNumber(23424234);
-     * @example getDayNumber(array(12, 12, 1983))
-     */
-    static function getDayNumber($data = NULL)
-    {
-        if (!$data) {
-            $data = time();
-        } elseif (is_array ($data)) {
-            $data = mktime(0, 0, 0, $data[1], $data[0], $data[2]);
-        }
-
-        $tab = getdate($data);
-        return $tab['yday'] +1;
-    }
-
-    /**
-     * return number of days in month
-     * 
-     * @param string|array|boolean $stamp unix timestamp or array(month, year) if NULL use current month
-     * @return integer|boolean
-     * @example getDayInMonth()
-     * @example getDayInMonth(34234234)
-     * @example getDayInMonth(array(12, 1983))
-     */
-    static function getDayInMonth($stamp = NULL)
-    {
-        if (is_array ($stamp)) {
-            $month  = $stamp[0];
-            $year   = $stamp[1];
-        } else {
-            if (!$stamp) {
-                $stamp = time();
-            }
-
-            $month  = self::getMonth($stamp);
-            $year   = self::getYear($stamp);
-        }
-
-        $year = self::isLeapYear($year);
-
-        switch ($month) {
-            case '1':
-                return 31;
-                break;
-
-            case '2':
-                if ($year) {
-                    return 29;
-                } else {
-                    return 28;
-                }
-                break;
-
-            case '3':
-                return 31;
-                break;
-
-            case '4':
-                return 30;
-                break;
-
-            case '5':
-                return 31;
-                break;
-
-            case '6':
-                return 30;
-                break;
-
-            case '7':
-                return 31;
-                break;
-
-            case '8':
-                return 31;
-                break;
-
-            case '9':
-                return 30;
-                break;
-
-            case '10':
-                return 31;
-                break;
-
-            case '11':
-                return 30;
-                break;
-
-            case '12':
-                return 31;
-                break;
-
-            default:
-                return FALSE;
-                break;
-        }
-    }
-
-    /**
-     * return array of months with days in year
-     * 
-     * @param integer|boolean|string $stamp unix timestamp, if NULL current year, if string year
-     * @example getMonths(23423423423)
-     * @example getMonths('2011')
-     * @return array
-     */
-    static function getMonths($stamp = NULL)
-    {
-        if (is_string($stamp)) {
-            $stamp = mktime(0, 0, 0, '24', '9', $stamp);
+        if (\is_array ($stamp)) {
+            $stamp = self::convertToDate($stamp);
         }
 
         if (!$stamp) {
             $stamp = time();
         }
 
-        $list = array();
+        if ($short) {
+            $dayType = 'D';
+        }
+
+        return date($dayType, $stamp);
+    }
+
+    /**
+     * return number of day in year (from 1 to 356)
+     * number of month or day in year without 0 at start
+     *
+     * @param null|int|array $stamp unix timestamp or array (day, month, year)
+     * @return int
+     * @example getDayNumber();
+     * @example getDayNumber(23424234);
+     * @example getDayNumber(array(12, 12, 1983))
+     */
+    public static function getDayNumber(int|null|array $stamp = null): int
+    {
+        if (\is_array ($stamp)) {
+            $stamp = self::convertToDate($stamp);
+        }
+
+        if (!$stamp) {
+            $stamp = time();
+        }
+
+        $tab = getdate($stamp);
+        return $tab['yday'] +1;
+    }
+
+    /**
+     * return number of days in month
+     *
+     * @param int|array|null $stamp unix timestamp or array(month, year) if null use current month
+     * @return int
+     * @example getDayInMonth()
+     * @example getDayInMonth(34234234)
+     * @example getDayInMonth(array(12, 1983))
+     */
+    public static function getDayCountInMonth(null|array|int $stamp = null): int
+    {
+        if (\is_array ($stamp)) {
+            if (\count($stamp) <= 2) {
+                $stamp = [1, $stamp[0], $stamp[1]];
+            }
+            $stamp = self::convertToDate($stamp);
+        }
+
+        if (!$stamp) {
+            $stamp = time();
+        }
+
+        $month = self::getMonth($stamp);
+        $year = self::isLeapYear(self::getYear($stamp));
+
+        return match ($month) {
+            '01', '03', '05', '07', '08', '10', '12' => 31,
+            '04', '06', '09', '11' => 30,
+            '02' => $year ? 29 : 28,
+            default => 0,
+        };
+    }
+
+    /**
+     * return array of months with days in year
+     *
+     * @param int|null $stamp unix timestamp, if null current year, if string year
+     * @param bool $isYear
+     * @return array
+     * @example getMonths()
+     * @example getMonths(23423423423)
+     * @example getMonths(2011, true)
+     */
+    public static function getMonths(?int $stamp = null, bool $isYear = false): array
+    {
+        if ($isYear) {
+            $stamp = self::convertToDate([1, 1, $stamp]);
+        }
+
+        if (!$stamp) {
+            $stamp = time();
+        }
+
+        $list = [];
         $year = self::getYear($stamp);
 
         for ($i = 1; $i <= 12; $i++) {
-            $list[$i] = self::getDayInMonth(array($i, $year));
+            $list[$i] = self::getDayCountInMonth([$i, $year]);
         }
 
         return $list;
@@ -342,30 +215,22 @@ class Date
 
     /**
      * check that date is correct
-     * 
-     * @param integer|array|boolean $stamp unix timestamp, date array or current date
-     * @return boolean return TRUE if date is correct
+     *
+     * @param int|array|null $stamp unix timestamp, date array or current date
+     * @return bool return true if date is correct
      * @example valid()
      * @example valid(34234234)
      * @example valid(array(12, 12, 1983)) day, month, year
      */
-    static function valid($stamp = NULL)
+    public static function valid(int|array|null $stamp = null): bool
     {
-        if (is_array($stamp)) {
-
-            $month  = $stamp[1];
-            $year   = $stamp[0];
-            $day    = $stamp[2];
-
+        if (is_array($stamp) && isset($stamp[0], $stamp[1], $stamp[2])) {
+            [$year, $month, $day] = $stamp;
         } else {
 
-            if (!$stamp) {
-                $stamp = time();
-            }
-
-            $month  = self::getMonth($stamp);
-            $year   = self::getYear($stamp);
-            $day    = self::getDay($stamp);
+            $month = (int) self::getMonth($stamp);
+            $year = self::getYear($stamp);
+            $day = (int) self::getDay($stamp);
         }
 
         return checkdate($month, $day, $year);
@@ -373,170 +238,160 @@ class Date
 
     /**
      * check that year is leap-year
-     * 
-     * @param integer|boolean $rok year to check, or current year
-     * @return boolean TRUE if year is an leap-year
+     *
+     * @param int|null $year year to check, or current year
+     * @return bool true if year is an leap-year
      */
-    static function isLeapYear($rok = NULL)
+    public static function isLeapYear(?int $year = null): bool
     {
-        if (!$rok) {
-            $rok = self::getYear();
+        if (!$year) {
+            $year = self::getYear();
         }
 
-        if ($rok%4 === 0 && $rok%100 !== 0 || $rok%400 === 0){
-            return TRUE;
-        }
-
-        return FALSE;
+        return ($year % 4 === 0 && $year % 100 !== 0) || $year % 400 === 0;
     }
 
     /**
      * return given from unix timestamp or current day or ith name in month
-     * 
-     * @param integer|boolean $stamp
-     * @param boolean $name if TRUE return as name
-     * @param boolean $short if TRUE return as short name
-     * @return integer|string
+     *
+     * @param int|null $stamp
+     * @param bool $name if true return as name
+     * @param bool $short if true return as short name
+     * @return string
      * @example getDay()
-     * @example getDay(252453, 0, 1)
-     * @example getDay(0, 1)
-     * @example getDay(2423424, 1, 1)
+     * @example getDay(252453, false, true)
+     * @example getDay(null, false, true)
+     * @example getDay(2423424, true, true)
      */
-    static function getDay($stamp = NULL, $name = FALSE, $short = FALSE)
+    public static function getDay(?int $stamp = null, bool $name = false, bool $short = false): string
     {
         if(!$stamp){
             $stamp = time();
         }
-        
-        if ($name) {
 
+        if ($name) {
             if ($short) {
-                return self::getDayName($stamp, 1);
+                return self::getDayName($stamp, true);
             }
 
             return self::getDayName($stamp);
-
-        } else {
-            return strftime('%d', $stamp);
         }
+
+        return date('d', $stamp);
     }
 
     /**
      * current month or given from timestamp
-     * 
-     * @param integer|boolean $stamp
-     * @param boolean $name if TRUE return as name
-     * @param boolean $short if TRUE return as short name
-     * @return integer|string
-     * @example getMonth(3424234, 1)
+     *
+     * @param int|null $stamp
+     * @param bool $name if true return as name
+     * @param bool $short if true return as short name
+     * @return string
+     * @example getMonth(3424234, true)
      * @example getMonth()
-     * @example getMonth(234234234, 1, 1) short version
+     * @example getMonth(234234234, true, true) short version
      */
-    static function getMonth($stamp = NULL, $name = FALSE, $short = FALSE)
+    public static function getMonth(?int $stamp = null, bool $name = false, bool $short = false): string
     {
         if (!$stamp) {
             $stamp = time();
         }
 
         if ($name) {
-
             if ($short) {
-                return self::getMonthName($stamp, 1);
+                return self::getMonthName($stamp, true);
             }
 
             return self::getMonthName($stamp);
-
-        } else {
-            return strftime('%m', $stamp);
         }
+
+        return date('m', $stamp);
     }
 
     /**
      * current year, or given in timestamp
-     * 
-     * @param integer $stamp
-     * @return integer
+     *
+     * @param int|null $stamp
+     * @return int
      */
-    static function getYear($stamp = NULL)
+    public static function getYear(?int $stamp = null): int
     {
         if (!$stamp) {
             $stamp = time();
         }
 
-        return strftime('%Y', $stamp);
+        return (int) date('Y', $stamp);
     }
 
     /**
      * return current hour, or given in timestamp
-     * 
-     * @param integer $stamp
-     * @return integer
+     *
+     * @param int|null $stamp
+     * @return int
      */
-    static function getHour($stamp = NULL)
+    public static function getHour(?int $stamp = null): int
     {
         if (!$stamp) {
             $stamp = time();
         }
 
-        return strftime('%H', $stamp);
+        return (int) date('H', $stamp);
     }
 
     /**
      * return current minute or given in timestamp
-     * 
-     * @param integer $stamp
-     * @return integer
+     *
+     * @param int|null $stamp
+     * @return int
      */
-    static function getMinutes($stamp = NULL)
+    public static function getMinutes(?int $stamp = null): int
     {
         if (!$stamp) {
             $stamp = time();
         }
 
-        return strftime('%M', $stamp);
+        return (int) date('i', $stamp);
     }
 
     /**
      * return current second or given in timestamp
-     * 
-     * @param integer $stamp
-     * @return integer
+     *
+     * @param int|null $stamp
+     * @return int
      */
-    static function getSeconds($stamp = NULL)
+    public static function getSeconds(?int $stamp = null): int
     {
         if (!$stamp) {
             $stamp = time();
         }
 
-        return strftime('%S', $stamp);
+        return (int) date('s', $stamp);
     }
 
     /**
      * return current week number or given in timestamp correct with ISO8601:1998
-     * 
-     * @param integer $stamp
-     * @return integer
+     *
+     * @param int|null $stamp
+     * @return int
      */
-    static function getWeek($stamp = NULL)
+    public static function getWeek(?int $stamp = null): int
     {
         if (!$stamp) {
             $stamp = time();
         }
 
-        return strftime('%W', $stamp);
+        return (int) date('W', $stamp);
     }
 
     /**
-     * convert ISO string to UTF-8
-     * default from ISO-8859-2 to UTF-8
-     * 
-     * @param string $string
-     * @param string $from
-     * @param string $to
-     * @return string
+     * convert date array to unix timestamp
      */
-    static function convert($string, $from = 'ISO-8859-2', $to = 'UTF-8')
+    protected static function convertToDate(array $date): int
     {
-        return iconv($from, $to, $string);
+        if (!isset($date[0], $date[1], $date[2])) {
+            throw new \InvalidArgumentException('Date array must contain exactly three elements: day, month, year.');
+        }
+
+        return mktime(0, 0, 0, $date[1], $date[0], $date[2]);
     }
 }

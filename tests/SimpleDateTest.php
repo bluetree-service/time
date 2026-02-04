@@ -8,6 +8,7 @@ use PHPUnit\Framework\TestCase;
 class SimpleDateTest extends TestCase
 {
     protected $time = 1770126169;
+
     public function testGetFormattedTime()
     {
         $time = Date::getFormattedTime();
@@ -20,16 +21,16 @@ class SimpleDateTest extends TestCase
     public function testGetDate()
     {
         $time = Date::getDate();
-        $this->assertMatchesRegularExpression('/\d{2}-\d{2}-\d{4}/', $time);
-
-        $time = Date::getDate($this->time, true);
-        $this->assertEquals('2026-02-03', $time);
-
-        $time = Date::getDate(null, true);
         $this->assertMatchesRegularExpression('/\d{4}-\d{2}-\d{2}/', $time);
 
-        $time = Date::getDate($this->time);
+        $time = Date::getDate($this->time, true);
         $this->assertEquals('03-02-2026', $time);
+
+        $time = Date::getDate(null, true);
+        $this->assertMatchesRegularExpression('/\d{2}-\d{2}-\d{4}/', $time);
+
+        $time = Date::getDate($this->time);
+        $this->assertEquals('2026-02-03', $time);
     }
 
     public function testGetTime()
@@ -43,6 +44,9 @@ class SimpleDateTest extends TestCase
 
     public function testGetMonthName()
     {
+        $month = Date::getMonthName([12, 12, 1983]);
+        $this->assertEquals('December', $month);
+
         $month = Date::getMonthName();
         $this->assertMatchesRegularExpression('/[A-Z]{1}[a-z]{3,10}/', $month);
         
@@ -58,6 +62,9 @@ class SimpleDateTest extends TestCase
 
     public function testGetDayName()
     {
+        $day = Date::getDayName([12, 12, 1983]);
+        $this->assertEquals('Monday', $day);
+
         $day = Date::getDayName();
         $this->assertMatchesRegularExpression('/[A-Z]{1}[a-z]{3,10}/', $day);
 
@@ -78,21 +85,26 @@ class SimpleDateTest extends TestCase
 
         $day = Date::getDayNumber($this->time);
         $this->assertEquals(34, $day);
+
+        $day = Date::getDayNumber([12, 12, 1983]);
+        $this->assertEquals(346, $day);
     }
 
-    public function testGetDayInMonth()
+    public function testGetDayCountInMonth()
     {
-        $day = Date::getDayInMonth();
+        $day = Date::getDayCountInMonth();
         $this->assertMatchesRegularExpression('/[\d]{2}/', $day);
 
-        $day = Date::getDayInMonth($this->time);
+        $day = Date::getDayCountInMonth($this->time);
         $this->assertEquals(28, $day);
+
+        $day = Date::getDayCountInMonth([12, 12, 1983]);
+        $this->assertEquals(31, $day);
     }
 
     public function testGetMonths()
     {
         $list = Date::getMonths($this->time);
-        
         $this->assertIsArray($list);
         $this->assertCount(12, $list);
         $this->assertEquals(
@@ -112,6 +124,30 @@ class SimpleDateTest extends TestCase
             ], 
             $list
         );
+
+        $list = Date::getMonths(2017, true);
+        $this->assertEquals(
+            [
+                1 => 31,
+                2 => 28,
+                3 => 31,
+                4 => 30,
+                5 => 31,
+                6 => 30,
+                7 => 31,
+                8 => 31,
+                9 => 30,
+                10 => 31,
+                11 => 30,
+                12 => 31,
+            ],
+            $list
+        );
+
+        $list = Date::getMonths();
+        $this->assertEquals(31, $list[3]);
+        $this->assertEquals(31, $list[7]);
+        $this->assertEquals(30, $list[6]);
     }
 
     public function testValid()
@@ -138,7 +174,7 @@ class SimpleDateTest extends TestCase
         $this->assertEquals(3, $day);
 
         $day = Date::getDay();
-        $this->assertMatchesRegularExpression('/[1-31]/', $day);
+        $this->assertMatchesRegularExpression('/[\d]{2}/', $day);
 
         $day = Date::getDay($this->time, true);
         $this->assertEquals('Tuesday', $day);
@@ -153,12 +189,10 @@ class SimpleDateTest extends TestCase
         $this->assertEquals(2, $month);
 
         $month = Date::getMonth();
-        $this->assertMatchesRegularExpression('/[1-12]/', $month);
-
+        $this->assertTrue($month >= 1 && $month <= 12);
 
         $month = Date::getMonth($this->time, true);
         $this->assertEquals('February', $month);
-
 
         $month = Date::getMonth($this->time, true, true);
         $this->assertEquals('Feb', $month);
@@ -179,7 +213,7 @@ class SimpleDateTest extends TestCase
         $this->assertEquals(13, $time);
 
         $time = Date::getHour();
-        $this->assertMatchesRegularExpression('/[0-23]/', $time);
+        $this->assertTrue($time >= 0 && $time <= 23);
     }
 
     public function testGetMinutes()
@@ -188,7 +222,7 @@ class SimpleDateTest extends TestCase
         $this->assertEquals(42, $time);
 
         $time = Date::getMinutes();
-        $this->assertMatchesRegularExpression('/[0-59]/', $time);
+        $this->assertTrue($time >= 0 && $time <= 59);
     }
 
     public function testGetSecond()
@@ -197,15 +231,22 @@ class SimpleDateTest extends TestCase
         $this->assertEquals(49, $time);
 
         $time = Date::getSeconds();
-        $this->assertMatchesRegularExpression('/[0-59]/', $time);
+        $this->assertTrue($time >= 0 && $time <= 59);
     }
 
     public function testGetWeek()
     {
         $time = Date::getWeek($this->time);
-        $this->assertEquals('05', $time);
+        $this->assertEquals(6, $time);
 
         $time = Date::getWeek();
-        $this->assertMatchesRegularExpression('/[\d]{2}/', $time);
+        $this->assertMatchesRegularExpression('/[\d]{1,2}/', $time);
+    }
+
+    public function testConvertExceptionsEmpty()
+    {
+        $this->expectException(\InvalidArgumentException::class);
+        $this->expectExceptionMessage('Date array must contain exactly three elements: day, month, year.');
+        Date::getMonthName([]);
     }
 }
