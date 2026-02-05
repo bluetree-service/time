@@ -1,61 +1,59 @@
 <?php
 
+declare(strict_types=1);
+
 namespace BlueTime;
 
 use BlueTime\Simple\Date as SimpleDate;
+use function time;
+use function is_numeric;
+use function is_array;
+use function mktime;
+use function floor;
 
 class Date
 {
     /**
      * contains unix timestamp
-     * @var integer
+     * @var int
      */
-    private $_unixTimestamp = 0;
+    private int $unixTimestamp = 0;
 
     /**
      * error information
      * @var string
      */
-    public $err;
+    public string $err;
 
     /**
-     * inform to use convert method from SimpleDate to fix text (default FALSE)
-     * @var boolean 
+     * inform to use convert method from SimpleDate to fix text (default false)
+     * @var bool
      */
-    public $useConversion = FALSE;
-
-    /**
-     * list of conversion types, default from ISO-8859-2 to UTF-8
-     * @var array
-     */
-    public $conversionArray = [
-        'from'  => 'ISO-8859-2',
-        'to'    => 'UTF-8'
-    ];
+    public bool $useConversion = false;
 
     /**
      * create date object with given timestamp, or current timestamp
-     * 
-     * @param mixed $date unix timestamp, or array(hour, minute, second, day, month, year)
+     *
+     * @param int|array|null $date unix timestamp, or array(hour, minute, second, day, month, year)
      * @example __construct(23424242);
      * @example __construct(array(15, 0, 0, 24, 9, 2011));
      */
-    public function __construct($date = FALSE)
+    public function __construct(int|array|null $date = null)
     {
-        if (!$date || empty($date)) {
-            $this->_unixTimestamp = time();
-        } elseif ($date && is_numeric($date)) {
-            $this->_unixTimestamp = $date;
+        if (empty($date)) {
+            $this->unixTimestamp = time();
+        } elseif (is_numeric($date)) {
+            $this->unixTimestamp = $date;
         } elseif (is_array($date)) {
-            $dateArray   = [$date[5], $date[4], $date[3]];
-            $valid       = SimpleDate::valid($dateArray);
+            $dateArray = [$date[5], $date[4], $date[3]];
+            $valid = SimpleDate::valid($dateArray);
 
             if (!$valid) {
                 $this->err = 'INVALID_TIME_FORMAT';
                 return;
             }
 
-            $this->_unixTimestamp = mktime(
+            $this->unixTimestamp = mktime(
                 $date[0],
                 $date[1],
                 $date[2],
@@ -68,261 +66,211 @@ class Date
 
     /**
      * return set up current timestamp
-     * 
+     *
      * @return int
      */
-    public function getStamp()
+    public function getStamp(): int
     {
-        return $this->_unixTimestamp;
+        return $this->unixTimestamp;
     }
 
     /**
      * allow to set new timestamp
-     * 
-     * @param integer $stamp
+     *
+     * @param int $stamp
      * @return Date
      */
-    public function setStamp($stamp)
+    public function setStamp(int $stamp): Date
     {
-        if (is_int($stamp)) {
-            $this->_unixTimestamp = $stamp;
-        }
+        $this->unixTimestamp = $stamp;
 
         return $this;
     }
 
     /**
      * return formatted time stored in object
-     * 
+     *
      * @return string
     */
-    public function getFormattedTime()
+    public function getFormattedTime(): string
     {
-        return SimpleDate::getFormattedTime($this->_unixTimestamp);
+        return SimpleDate::getFormattedTime($this->unixTimestamp);
     }
 
     /**
-     * return date in dd-mm-yyyy or yyyy-mm-dd if $type is set on TRUE
-     * 
-     * @param boolean $type FALSE -> dd-mm-yyyy, TRUE -> yyyy-mm-dd
+     * return date in dd-mm-yyyy or yyyy-mm-dd if $type is set on true
+     *
+     * @param bool $type false -> dd-mm-yyyy, true -> yyyy-mm-dd
      * @return string
-     * @example getDate(TRUE) - 2013-07-24
-     * @example getDate() - 24-07-2013
+     * @example getDate() - 2013-07-24
+     * @example getDate(true) - 24-07-2013
      */
-    public function getDate($type = FALSE)
+    public function getDate(bool $type = false): string
     {
-        return SimpleDate::getDate($this->_unixTimestamp, $type);
+        return SimpleDate::getDate($this->unixTimestamp, $type);
     }
     
     /**
      * return time in hh-mm-ss format
-     * 
+     *
      * @return string
      */
-    public function getTime()
+    public function getTime(): string
     {
-        return SimpleDate::getTime($this->_unixTimestamp);
+        return SimpleDate::getTime($this->unixTimestamp);
     }
 
     /**
      * return full or short month name, correct with set up localization
-     * 
-     * @param boolean $short if TRUE return month name in short version
+     *
+     * @param bool $short if true return month name in short version
      * @return string
      */
-    public function getMonthName($short = false)
+    public function getMonthName(bool $short = false): string
     {
-        $month = SimpleDate::getMonthName($this->_unixTimestamp, $short);
-
-        if ($this->useConversion) {
-            $month = SimpleDate::convert(
-                $month,
-                $this->conversionArray['from'],
-                $this->conversionArray['to']
-            );
-        }
-
-        return $month;
+        return SimpleDate::getMonthName($this->unixTimestamp, $short);
     }
 
     /**
      * return name of fill or short day in week, correct with set up localization
-     * 
-     * @param boolean $short if TRUE return day name in short version
-     * @return string nazwa dnia w miesiacu 
+     *
+     * @param bool $short if true return day name in short version
+     * @return string nazwa dnia w miesiacu
      */
-    public function getDayName($short = false)
+    public function getDayName(bool $short = false): string
     {
-        $day = SimpleDate::getDayName($this->_unixTimestamp, $short);
-
-        if ($this->useConversion) {
-            $day = SimpleDate::convert(
-                $day,
-                $this->conversionArray['from'],
-                $this->conversionArray['to']
-            );
-        }
-
-        return $day;
+        return SimpleDate::getDayName($this->unixTimestamp, $short);
     }
 
     /**
      * return current day or day name
-     * 
-     * @param boolean $name if TRUE return day name
-     * @param boolean $short if TRUE return day name in short version
-     * @return string|integer day name or number
+     *
+     * @param bool $name if true return day name
+     * @param bool $short if true return day name in short version
+     * @return string day name or number
      * @example getDay()
-     * @example getDay(TRUE) - name
-     * @example getDay(TRUE, TRUE) - name short version
+     * @example getDay(true) - name
+     * @example getDay(true, true) - name short version
      */
-    public function getDay($name = FALSE, $short = FALSE)
+    public function getDay(bool $name = false, bool $short = false): string
     {
-        $day = SimpleDate::getDay($this->_unixTimestamp, $name, $short);
-
-        if($this->useConversion){
-            $day = SimpleDate::convert(
-                $day,
-                $this->conversionArray['from'],
-                $this->conversionArray['to']
-            );
-        }
-
-        return $day;
+        return SimpleDate::getDay($this->unixTimestamp, $name, $short);
     }
 
     /**
      * return day number in year
-     * 
-     * @return integer
+     *
+     * @return int
      */
-    public function getDayNumber()
+    public function getDayNumber(): int
     {
-        return SimpleDate::getDayNumber($this->_unixTimestamp);
+        return SimpleDate::getDayNumber($this->unixTimestamp);
     }
 
     /**
      * return number of days in month
-     * 
-     * @return integer
+     *
+     * @return int
      */
-    public function getDayCountInMonth()
+    public function getDayCountInMonth(): int
     {
-        return SimpleDate::getDayCountInMonth($this->_unixTimestamp);
+        return SimpleDate::getDayCountInMonth($this->unixTimestamp);
     }
 
     /**
      * return list of months in year, with month days number
-     * 
+     *
      * @return array
      */
-    public function getMonths()
+    public function getMonths(): array
     {
-        return SimpleDate::getMonths($this->_unixTimestamp);
+        return SimpleDate::getMonths($this->unixTimestamp);
     }
 
     /**
      * check that year is leap-year
-     * if is return TRUE
-     * 
-     * @return boolean
+     * if is return true
+     *
+     * @return bool
      */
-    public function isLeapYear()
+    public function isLeapYear(): bool
     {
-        return SimpleDate::isLeapYear($this->_unixTimestamp);
+        return SimpleDate::isLeapYear($this->unixTimestamp);
     }
 
     /**
      * return current month number or its name
-     * 
-     * @param boolean $name if TRUE return month name
-     * @param boolean $short if TRUE return month name in short version
-     * @return string|integer month name or number
+     *
+     * @param bool $name if true return month name
+     * @param bool $short if true return month name in short version
+     * @return string month name or number
      * @example miesiac()
      * @example miesiac(1)
      * @example miesiac(1, 1)
-     * @uses SimpleDate::miesiac()
-     * @uses Date::$unix_timestamp
-     * @uses Date::$conversion_array
-     * @uses Date::$use_conversion
      */
-    public function getMonth($name = FALSE, $short = FALSE)
+    public function getMonth(bool $name = false, bool $short = false): string
     {
-        $month = SimpleDate::getMonth($this->_unixTimestamp, $name, $short);
-        
-        if ($this->useConversion) {
-            $month = SimpleDate::convert(
-                $month,
-                $this->conversionArray['from'],
-                $this->conversionArray['to']
-            );
-        }
-        
-        return $month;
+        return SimpleDate::getMonth($this->unixTimestamp, $name, $short);
     }
 
     /**
      * return year
-     * @return integer
+     * @return int
      */
-    public function getYear()
+    public function getYear(): int
     {
-        return SimpleDate::getYear($this->_unixTimestamp);
+        return SimpleDate::getYear($this->unixTimestamp);
     }
 
     /**
      * return hour
-     * 
-     * @return integer
+     *
+     * @return int
      */
-    public function getHour()
+    public function getHour(): int
     {
-        return SimpleDate::getHour($this->_unixTimestamp);
+        return SimpleDate::getHour($this->unixTimestamp);
     }
 
     /**
      * return minutes
-     * 
-     * @return integer
+     *
+     * @return int
      */
-    public function getMinutes()
+    public function getMinutes(): int
     {
-        return SimpleDate::getMinutes($this->_unixTimestamp);
+        return SimpleDate::getMinutes($this->unixTimestamp);
     }
 
     /**
      * return seconds
-     * 
-     * @return integer
+     *
+     * @return int
      */
-    public function getSeconds()
+    public function getSeconds(): int
     {
-        return SimpleDate::getSeconds($this->_unixTimestamp);
+        return SimpleDate::getSeconds($this->unixTimestamp);
     }
 
     /**
-     * 
      * week number in year, correct with ISO8601:1998
-     * @return integer
+     *
+     * @return int
      */
-    public function getWeek()
+    public function getWeek(): int
     {
-        return SimpleDate::getWeek($this->_unixTimestamp);
+        return SimpleDate::getWeek($this->unixTimestamp);
     }
 
     /**
      * compare two dates, and check that rae the same
-     * 
+     *
      * @param Date $data
-     * @return boolean return TRUE if dates are the same
+     * @return bool return true if dates are the same
      */
-    public function compareDates(Date $data)
+    public function compareDates(Date $data): bool
     {
-        if ($data->getStamp() === $this->_unixTimestamp) {
-            return TRUE;
-        } else {
-            return FALSE;
-        }
+        return $data->getStamp() === $this->unixTimestamp;
     }
 
     /**
@@ -330,10 +278,10 @@ class Date
      * if date in object is older, return as positive value, if younger, wil return negative
      * if some value is same, will return 0
      * default differences will return sec, min, hour, day, week, months, years
-     * 
+     *
      * @param Date $data
      * @param string $differenceType type of differences (default all)
-     * @param boolean $relative if FALSE will return absolute comparison, else depending of other parameters
+     * @param bool $relative if false will return absolute comparison, else depending of other parameters
      * @return mixed return difference, or array of differences
      * @example diff($data_object, 0, 1)
      * @example diff($data_object)
@@ -343,48 +291,48 @@ class Date
      */
     public function getDifference(
         Date $data,
-        $differenceType = NULL,
-        $relative       = NULL
+        $differenceType = null,
+        $relative = false
     ){
         switch ($differenceType) {
             case'seconds':
-                return $this->_getSecondsDifference($data, $relative);
+                return $this->getSecondsDifference($data, $relative);
                 break;
 
             case'years':
-                return $this->_getYearsDifference($data);
+                return $this->getYearsDifference($data);
                 break;
 
             case'months':
-                return $this->_getMonthsDifference($data, $relative);
+                return $this->getMonthsDifference($data, $relative);
                 break;
 
             case'weeks':
-                return $this->_getWeeksDifference($data, $relative);
+                return $this->getWeeksDifference($data, $relative);
                 break;
 
             case'days':
-                return $this->_getDaysDifference($data, $relative);
+                return $this->getDaysDifference($data, $relative);
                 break;
 
             case'hours':
-                return $this->_getHoursDifference($data, $relative);
+                return $this->getHoursDifference($data, $relative);
                 break;
 
             case'minutes':
-                return $this->_getMinutesDifference($data, $relative);
+                return $this->getMinutesDifference($data, $relative);
                 break;
 
             default:
-                $differenceList = array(
-                    'seconds'  => $this->_getSecondsDifference($data, $relative),
-                    'years'    => $this->_getYearsDifference($data),
-                    'months'   => $this->_getMonthsDifference($data, $relative),
-                    'weeks'    => $this->_getWeeksDifference($data, $relative),
-                    'days'     => $this->_getDaysDifference($data, $relative),
-                    'hours'    => $this->_getHoursDifference($data, $relative),
-                    'minutes'  => $this->_getMinutesDifference($data, $relative)
-                );
+                $differenceList = [
+                    'seconds'  => $this->getSecondsDifference($data, $relative),
+                    'years'    => $this->getYearsDifference($data),
+                    'months'   => $this->getMonthsDifference($data, $relative),
+                    'weeks'    => $this->getWeeksDifference($data, $relative),
+                    'days'     => $this->getDaysDifference($data, $relative),
+                    'hours'    => $this->getHoursDifference($data, $relative),
+                    'minutes'  => $this->getMinutesDifference($data, $relative)
+                ];
 
                 return $differenceList;
                 break;
@@ -393,10 +341,10 @@ class Date
 
     /**
      * return formatted time while object is used as string
-     * 
+     *
      * @return string
      */
-    public function __toString()
+    public function __toString(): string
     {
         return $this->getFormattedTime();
     }
@@ -404,103 +352,98 @@ class Date
     /**
      * return formatted time, correct with strftime() function
      * all depends from set localization
-     * %a - dy short name
-     * %A - full day name
-     * %b - short month name
-     * %B - full month name
-     * %c - prefer date and time representation
-     * %C - age number (year/100 and shorted to integer, interval from 00 to 99)
-     * %d - day of month as integer number (from 01 to 31)
-     * %D - same as co %m/%d/%y
-     * %e - day of month as integer number, but put space before number (from" 1" to "31")
-     * %g - as same as %G,but without age
-     * %G - year in xxxx format, related with ISO week number
-     * %h - as same as %b
-     * %H - hour in 24-hour system (from 00 to 23)
-     * %I - hour in 12-hour system (from 01 to 12)
-     * %j - day of year as integer (from 001 to 366)
-     * %m - month as integer (from 01 to 12)
-     * %M - minutes as integer
-     * %n - new line
-     * %p - "am: or "pm" according to given time
-     * %r - time in a.m. or p.m. notation
-     * %R - time in 24-hour notation
-     * %S - seconds as integer
-     * %t - tab symbol
-     * %T - current time, same as %H:%M:%S
-     * %u - day of week number as integer (from 1 to 7) 1-monday
-     * %U - week of year number as integer, start from first sunday as first day of first week
-     * %V - week number of current year in ISO 8601:1988 as integer (from 01 to 53)
-     *      first week is a week that have las 4 days
-     * %W - week number of current year, start from first monday of first week
-     * %w - day of week as integer, starts from sunday (0-sunday)
-     * %x - prefer date presentation, without time
-     * %X - prefer time representation, without date
-     * %y - year as integer, without age (from 00 to 99)
-     * %Y - year as integer in  xxxx format
-     * %Z - time zone as name or shortcut
-     * %% - "%" symbol
-     * 
+     * d - Day of the month with leading zeros (01 to 31)
+     * D - A textual representation of a day, three letters (Mon through Sun)
+     * j - Day of the month without leading zeros (1 to 31)
+     * l - A full textual representation of the day (Sunday through Saturday)
+     * N - ISO-8601 numeric day of the week (1=Monday to 7=Sunday)
+     * w - Numeric day of the week (0=Sunday to 6=Saturday)
+     * z - Day of the year (0 to 365)
+     * W - ISO-8601 week number of year, weeks starting on Monday
+     * F - A full textual representation of a month (January through December)
+     * m - Month as a number with leading zeros (01 to 12)
+     * M - A short textual representation of a month (Jan through Dec)
+     * n - Month without leading zeros (1 to 12)
+     * t - Number of days in the given month
+     * L - Whether it's a leap year (1 or 0)
+     * Y - A full four digit year
+     * y - A two digit year
+     * a - Lowercase Ante meridiem and Post meridiem (am or pm)
+     * A - Uppercase Ante meridiem and Post meridiem (AM or PM)
+     * g - 12-hour format without leading zeros (1 to 12)
+     * G - 24-hour format without leading zeros (0 to 23)
+     * h - 12-hour format with leading zeros (01 to 12)
+     * H - 24-hour format with leading zeros (00 to 23)
+     * i - Minutes with leading zeros (00 to 59)
+     * s - Seconds with leading zeros (00 to 59)
+     * i - Minutes with leading zeros (00 to 59)
+     * a - Lowercase Ante meridiem and Post meridiem (am or pm)
+     * h:i:s A - time in a.m. or p.m. notation
+     * H:i - time in 24-hour notation
+     * s - Seconds with leading zeros (00 to 59)
+     * H:i:s - current time
+     * N - ISO-8601 numeric day of the week (1=Monday to 7=Sunday)
+     * W - ISO-8601 week number of year, weeks starting on Monday
+     * V - ISO-8601 week number of year (01 to 53)
+     * W - Week number of the year
+     * w - Numeric representation of the day of the week (0=Sunday to 6=Saturday)
+     * d/m/Y - localized date format
+     * H:i:s - localized time format
+     * y - Two digit representation of the year
+     * Y - Full numeric representation of a year, 4 digits
+     * T - Timezone abbreviation
+     * % - Literal % character
+     *
      * @param string $format
-     * @return mixed
+     * @return string
      * @example getOtherFormats("%A - day name correct with localization ")
      */
-    public function getOtherFormats($format)
+    public function getOtherFormats(string $format): string
     {
-        $formatted = strftime ($format, $this->_unixTimestamp);
-
-        if($this->useConversion){
-            $formatted = SimpleDate::convert(
-                $formatted,
-                $this->conversionArray['from'],
-                $this->conversionArray['to']
-            );
-        }
-
-        return $formatted;
+        return date($format, $this->unixTimestamp);
     }
 
     /**
      * check that date is correct
-     * 
-     * @return boolean
+     *
+     * @return bool
      */
-    public function checkDate()
+    public function checkDate(): bool
     {
-        return SimpleDate::valid($this->_unixTimestamp);
+        return SimpleDate::valid($this->unixTimestamp);
     }
 
     /**
      * return differences between seconds
-     * 
+     *
      * @param Date $date
-     * @param boolean $relative absolute difference, or depending of set time
-     * @return integer difference
+     * @param bool $relative absolute difference, or depending of set time
+     * @return int difference
      */
-    protected function _getSecondsDifference(Date $date, $relative)
+    protected function getSecondsDifference(Date $date, bool $relative): int
     {
         if ($relative) {
             return $this->getSeconds() - $date->getSeconds();
         }
 
         $data = $date->getStamp();
-        return $this->_unixTimestamp - $data;
+        return $this->unixTimestamp - $data;
     }
 
     /**
      * return differences between minutes
-     * 
+     *
      * @param Date $date
-     * @param boolean $relative absolute difference, or depending of set time
-     * @return integer difference
+     * @param bool $relative absolute difference, or depending of set time
+     * @return float difference
      */
-    protected function _getMinutesDifference(Date $date, $relative)
+    protected function getMinutesDifference(Date $date, bool $relative): float
     {
         if ($relative) {
             return $this->getMinutes() - $date->getMinutes();
         }
 
-        $diff = $this->_calculateTimeDifference($date);
+        $diff = $this->calculateTimeDifference($date);
         return floor($diff/60);
     }
 
@@ -508,16 +451,16 @@ class Date
      * return differences between hours
      *
      * @param Date $date
-     * @param boolean $relative absolute difference, or depending of set time
-     * @return integer difference
+     * @param bool $relative absolute difference, or depending of set time
+     * @return float difference
      */
-    protected function _getHoursDifference(Date $date, $relative)
+    protected function getHoursDifference(Date $date, bool $relative): float
     {
         if ($relative) {
             return $this->getHour() - $date->getHour();
         }
 
-        $diff = $this->_calculateTimeDifference($date);
+        $diff = $this->calculateTimeDifference($date);
         return floor($diff/60/60);
     }
 
@@ -525,16 +468,18 @@ class Date
      * return differences between weeks
      *
      * @param Date $date
-     * @param boolean $relative absolute difference, or depending of set time
-     * @return integer difference
+     * @param bool $relative absolute difference, or depending of set time
+     * @return float difference
      */
-    protected function _getWeeksDifference(Date $date, $relative)
+    protected function getWeeksDifference(Date $date, bool $relative): float
     {
         if ($relative) {
             return $this->getWeek() - $date->getWeek();
         }
+        
+        //check stamp difference before rounding
 
-        $diff = $this->_calculateTimeDifference($date);
+        $diff = $this->calculateTimeDifference($date);
         return floor($diff/7/24/60/60);
     }
 
@@ -542,16 +487,16 @@ class Date
      * return differences between days
      *
      * @param Date $date
-     * @param boolean $relative absolute difference, or depending of set time
-     * @return integer difference
+     * @param bool $relative absolute difference, or depending of set time
+     * @return float difference
      */
-    protected function _getDaysDifference(Date $date, $relative)
+    protected function getDaysDifference(Date $date, bool $relative): float
     {
         if ($relative) {
-            return $this->getDay() - $date->getDay();
+            return (int) $this->getDay() - (int) $date->getDay();
         }
 
-        $diff = $this->_calculateTimeDifference($date);
+        $diff = $this->calculateTimeDifference($date);
         return floor($diff/24/60/60);
     }
 
@@ -559,16 +504,16 @@ class Date
      * return differences between months
      *
      * @param Date $date
-     * @param boolean $relative absolute difference, or depending of set time
-     * @return integer difference
+     * @param bool $relative absolute difference, or depending of set time
+     * @return float difference
      */
-    protected function _getMonthsDifference(Date $date, $relative)
+    protected function getMonthsDifference(Date $date, bool $relative): float
     {
         if ($relative) {
-            return $this->getMonth() - $date->getMonth();
+            return (int) $this->getMonth() - (int) $date->getMonth();
         }
 
-        $diff = $this->_calculateTimeDifference($date);
+        $diff = $this->calculateTimeDifference($date);
         return floor($diff/12/24/60/60);
     }
 
@@ -576,22 +521,21 @@ class Date
      * return differences between years
      *
      * @param Date $date
-     * @return integer difference
+     * @return int difference
      */
-    protected function _getYearsDifference(Date $date)
+    protected function getYearsDifference(Date $date): int
     {
         return $this->getYear() - $date->getYear();
     }
 
     /**
      * return difference between seconds for given time
-     * 
+     *
      * @param Date $data
-     * @return integer difference
+     * @return int difference
      */
-    private function _calculateTimeDifference(Date $data)
+    private function calculateTimeDifference(Date $data): int
     {
-        $data = (int)$data->__toString();
-        return $this->_unixTimestamp - $data;
+        return $this->unixTimestamp - $data->getStamp();
     }
 }
