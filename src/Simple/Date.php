@@ -75,7 +75,7 @@ class Date
      * @return string
      * @example monthName() - current month name
      * @example monthName(254543534); - name of month from given timestamp
-     * @example monthName(array(12, 12, 1983)) - name of month from given date array
+     * @example monthName(array(2017, 06, 27)) - name of month from given date array
      */
     public static function getMonthName(null|array|int $stamp = null, bool $short = false): string
     {
@@ -105,7 +105,7 @@ class Date
      * @return string day name
      * @example getDayName();
      * @example getDayName(23424234);
-     * @example getDayName(array(12, 12, 1983))
+     * @example getDayName(array(2017, 06, 27))
      */
     public static function getDayName(null|int|array $stamp = null, bool $short = false): string
     {
@@ -134,7 +134,7 @@ class Date
      * @return int
      * @example getDayNumber();
      * @example getDayNumber(23424234);
-     * @example getDayNumber(array(12, 12, 1983))
+     * @example getDayNumber(array(2017, 06, 27))
      */
     public static function getDayNumber(int|null|array $stamp = null): int
     {
@@ -163,7 +163,7 @@ class Date
     {
         if (\is_array ($stamp)) {
             if (\count($stamp) <= 2) {
-                $stamp = [1, $stamp[0], $stamp[1]];
+                $stamp = [$stamp[0], $stamp[1], 1];
             }
             $stamp = self::convertToDate($stamp);
         }
@@ -196,7 +196,7 @@ class Date
     public static function getMonths(?int $stamp = null, bool $isYear = false): array
     {
         if ($isYear) {
-            $stamp = self::convertToDate([1, 1, $stamp]);
+            $stamp = self::convertToDate([$stamp, 1, 1]);
         }
 
         if (!$stamp) {
@@ -207,7 +207,7 @@ class Date
         $year = self::getYear($stamp);
 
         for ($i = 1; $i <= 12; $i++) {
-            $list[$i] = self::getDayCountInMonth([$i, $year]);
+            $list[$i] = self::getDayCountInMonth([$year, $i]);
         }
 
         return $list;
@@ -220,7 +220,7 @@ class Date
      * @return bool return true if date is correct
      * @example valid()
      * @example valid(34234234)
-     * @example valid(array(12, 12, 1983)) day, month, year
+     * @example valid(array(2017, 06, 27)) day, month, year
      */
     public static function valid(int|array|null $stamp = null): bool
     {
@@ -392,6 +392,6 @@ class Date
             throw new \InvalidArgumentException('Date array must contain exactly three elements: day, month, year.');
         }
 
-        return mktime(0, 0, 0, $date[1], $date[0], $date[2]);
+        return mktime(0, 0, 0, $date[1], $date[2], $date[0]);
     }
 }

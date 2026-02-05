@@ -47,7 +47,7 @@ class Date
         } elseif ($date && is_numeric($date)) {
             $this->_unixTimestamp = $date;
         } elseif (is_array($date)) {
-            $dateArray   = [$date[3], $date[4], $date[5]];
+            $dateArray   = [$date[5], $date[4], $date[3]];
             $valid       = SimpleDate::valid($dateArray);
 
             if (!$valid) {
@@ -130,7 +130,7 @@ class Date
      * @param boolean $short if TRUE return month name in short version
      * @return string
      */
-    public function getMonthName($short = NULL)
+    public function getMonthName($short = false)
     {
         $month = SimpleDate::getMonthName($this->_unixTimestamp, $short);
 
@@ -151,7 +151,7 @@ class Date
      * @param boolean $short if TRUE return day name in short version
      * @return string nazwa dnia w miesiacu 
      */
-    public function getDayName($short = NULL)
+    public function getDayName($short = false)
     {
         $day = SimpleDate::getDayName($this->_unixTimestamp, $short);
 
@@ -206,9 +206,9 @@ class Date
      * 
      * @return integer
      */
-    public function getDayInMonth()
+    public function getDayCountInMonth()
     {
-        return SimpleDate::getDayInMonth($this->_unixTimestamp);
+        return SimpleDate::getDayCountInMonth($this->_unixTimestamp);
     }
 
     /**
@@ -318,7 +318,7 @@ class Date
      */
     public function compareDates(Date $data)
     {
-        if ($data === $this->_unixTimestamp) {
+        if ($data->getStamp() === $this->_unixTimestamp) {
             return TRUE;
         } else {
             return FALSE;
@@ -392,13 +392,13 @@ class Date
     }
 
     /**
-     * return unix timestamp when try to get object as string
+     * return formatted time while object is used as string
      * 
      * @return string
      */
     public function __toString()
     {
-        return (string)$this->_unixTimestamp;
+        return $this->getFormattedTime();
     }
 
     /**
@@ -483,7 +483,7 @@ class Date
             return $this->getSeconds() - $date->getSeconds();
         }
 
-        $data = (int)$date->__toString();
+        $data = $date->getStamp();
         return $this->_unixTimestamp - $data;
     }
 
