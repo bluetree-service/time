@@ -9,27 +9,14 @@ use function time;
 use function is_numeric;
 use function is_array;
 use function mktime;
-use function floor;
 
-class Date
+class Date extends Calculation
 {
-    /**
-     * contains unix timestamp
-     * @var int
-     */
-    private int $unixTimestamp = 0;
-
     /**
      * error information
      * @var string
      */
     public string $err;
-
-    /**
-     * inform to use convert method from SimpleDate to fix text (default false)
-     * @var bool
-     */
-    public bool $useConversion = false;
 
     /**
      * create date object with given timestamp, or current timestamp
@@ -280,9 +267,9 @@ class Date
      * default differences will return sec, min, hour, day, week, months, years
      *
      * @param Date $data
-     * @param string $differenceType type of differences (default all)
+     * @param string|null $differenceType type of differences (default all)
      * @param bool $relative if false will return absolute comparison, else depending of other parameters
-     * @return mixed return difference, or array of differences
+     * @return array|float|int return difference, or array of differences
      * @example diff($data_object, 0, 1)
      * @example diff($data_object)
      * @example diff($data_object, 'days', 1)
@@ -291,52 +278,27 @@ class Date
      */
     public function getDifference(
         Date $data,
-        $differenceType = null,
-        $relative = false
-    ){
-        switch ($differenceType) {
-            case'seconds':
-                return $this->getSecondsDifference($data, $relative);
-                break;
-
-            case'years':
-                return $this->getYearsDifference($data);
-                break;
-
-            case'months':
-                return $this->getMonthsDifference($data, $relative);
-                break;
-
-            case'weeks':
-                return $this->getWeeksDifference($data, $relative);
-                break;
-
-            case'days':
-                return $this->getDaysDifference($data, $relative);
-                break;
-
-            case'hours':
-                return $this->getHoursDifference($data, $relative);
-                break;
-
-            case'minutes':
-                return $this->getMinutesDifference($data, $relative);
-                break;
-
-            default:
-                $differenceList = [
-                    'seconds'  => $this->getSecondsDifference($data, $relative),
-                    'years'    => $this->getYearsDifference($data),
-                    'months'   => $this->getMonthsDifference($data, $relative),
-                    'weeks'    => $this->getWeeksDifference($data, $relative),
-                    'days'     => $this->getDaysDifference($data, $relative),
-                    'hours'    => $this->getHoursDifference($data, $relative),
-                    'minutes'  => $this->getMinutesDifference($data, $relative)
-                ];
-
-                return $differenceList;
-                break;
-        }
+        ?string $differenceType = null,
+        bool $relative = false
+    ): array|float|int {
+        return match ($differenceType) {
+            'seconds' => $this->getSecondsDifference($data, $relative),
+            'years' => $this->getYearsDifference($data, $relative),
+            'months' => $this->getMonthsDifference($data, $relative),
+            'weeks' => $this->getWeeksDifference($data, $relative),
+            'days' => $this->getDaysDifference($data, $relative),
+            'hours' => $this->getHoursDifference($data, $relative),
+            'minutes' => $this->getMinutesDifference($data, $relative),
+            default => [
+                'seconds' => $this->getSecondsDifference($data, $relative),
+                'years'   => $this->getYearsDifference($data, $relative),
+                'months'  => $this->getMonthsDifference($data, $relative),
+                'weeks'   => $this->getWeeksDifference($data, $relative),
+                'days'    => $this->getDaysDifference($data, $relative),
+                'hours'   => $this->getHoursDifference($data, $relative),
+                'minutes' => $this->getMinutesDifference($data, $relative)
+            ],
+        };
     }
 
     /**
@@ -411,131 +373,5 @@ class Date
     public function checkDate(): bool
     {
         return SimpleDate::valid($this->unixTimestamp);
-    }
-
-    /**
-     * return differences between seconds
-     *
-     * @param Date $date
-     * @param bool $relative absolute difference, or depending of set time
-     * @return int difference
-     */
-    protected function getSecondsDifference(Date $date, bool $relative): int
-    {
-        if ($relative) {
-            return $this->getSeconds() - $date->getSeconds();
-        }
-
-        $data = $date->getStamp();
-        return $this->unixTimestamp - $data;
-    }
-
-    /**
-     * return differences between minutes
-     *
-     * @param Date $date
-     * @param bool $relative absolute difference, or depending of set time
-     * @return float difference
-     */
-    protected function getMinutesDifference(Date $date, bool $relative): float
-    {
-        if ($relative) {
-            return $this->getMinutes() - $date->getMinutes();
-        }
-
-        $diff = $this->calculateTimeDifference($date);
-        return floor($diff/60);
-    }
-
-    /**
-     * return differences between hours
-     *
-     * @param Date $date
-     * @param bool $relative absolute difference, or depending of set time
-     * @return float difference
-     */
-    protected function getHoursDifference(Date $date, bool $relative): float
-    {
-        if ($relative) {
-            return $this->getHour() - $date->getHour();
-        }
-
-        $diff = $this->calculateTimeDifference($date);
-        return floor($diff/60/60);
-    }
-
-    /**
-     * return differences between weeks
-     *
-     * @param Date $date
-     * @param bool $relative absolute difference, or depending of set time
-     * @return float difference
-     */
-    protected function getWeeksDifference(Date $date, bool $relative): float
-    {
-        if ($relative) {
-            return $this->getWeek() - $date->getWeek();
-        }
-        
-        //check stamp difference before rounding
-
-        $diff = $this->calculateTimeDifference($date);
-        return floor($diff/7/24/60/60);
-    }
-
-    /**
-     * return differences between days
-     *
-     * @param Date $date
-     * @param bool $relative absolute difference, or depending of set time
-     * @return float difference
-     */
-    protected function getDaysDifference(Date $date, bool $relative): float
-    {
-        if ($relative) {
-            return (int) $this->getDay() - (int) $date->getDay();
-        }
-
-        $diff = $this->calculateTimeDifference($date);
-        return floor($diff/24/60/60);
-    }
-
-    /**
-     * return differences between months
-     *
-     * @param Date $date
-     * @param bool $relative absolute difference, or depending of set time
-     * @return float difference
-     */
-    protected function getMonthsDifference(Date $date, bool $relative): float
-    {
-        if ($relative) {
-            return (int) $this->getMonth() - (int) $date->getMonth();
-        }
-
-        $diff = $this->calculateTimeDifference($date);
-        return floor($diff/12/24/60/60);
-    }
-
-    /**
-     * return differences between years
-     *
-     * @param Date $date
-     * @return int difference
-     */
-    protected function getYearsDifference(Date $date): int
-    {
-        return $this->getYear() - $date->getYear();
-    }
-
-    /**
-     * return difference between seconds for given time
-     *
-     * @param Date $data
-     * @return int difference
-     */
-    private function calculateTimeDifference(Date $data): int
-    {
-        return $this->unixTimestamp - $data->getStamp();
     }
 }

@@ -165,37 +165,83 @@ class DateObjectTest extends TestCase
     public function testGetDfference()
     {
         $date = new Date($this->time);
-        $date2 = new Date($this->time + 1000);
+        $date2 = new Date($this->time + 100000000);
 
         $this->assertEquals(
             [
-                //różnica w każdym zakresie czasowym, tu zwraca kompletne bzdury poza sekundami
-                "seconds" => -1000,
-                "years" => 0,
-                "months" => 1707.0,
-                "weeks" => 2926.0,
-                "days" => 20487.0,
-                "hours" => 491701.0,
-                "minutes" => 29502069.0, //tutaj powinno być16.666 
+                "seconds" => 100000000,
+                "years" => 3.17098,
+                "months" => 38.58025,
+                "weeks" => 165.34392,
+                "days" => 1157.40741,
+                "hours" => 27777.77778,
+                "minutes" => 1666666.66667,
             ],
             $date->getDifference($date2)
         );
 
         $this->assertEquals(
             [
-                //różnica w czasie rzeczywistym, to generalnie dziala ok
                 "seconds" => 20,
-                "years" => 0,
-                "months" => 0,
-                "weeks" => 0,
-                "days" => 0,
-                "hours" => 0,
-                "minutes" => -17, //tu przemyslec zaokragalnie, czy -16 czy -17, raczej powinno byc -16 i czemu - jak sekundy są na +
+                "years" => 3.0,
+                "months" => 2.0,
+                "weeks" => 8.0,
+                "days" => 2.0,
+                "hours" => 10.0,
+                "minutes" => 13.0,
             ],
             $date->getDifference($date2, null, true)
         );
+
+        $this->assertEquals(
+            [
+                "seconds" => -20.0,
+                "years" => -3.0,
+                "months" => -2.0,
+                "weeks" => -8.0,
+                "days" => -2.0,
+                "hours" => -10.0,
+                "minutes" => -13.0,
+            ],
+            $date2->getDifference($date, null, true)
+        );
+
+        $this->assertEquals(
+            -20.0,
+            $date2->getDifference($date, 'seconds', true)
+        );
+
+        $this->assertEquals(
+                -13.0,
+            $date2->getDifference($date, 'minutes', true)
+        );
+
+        $this->assertEquals(
+                -3.0,
+            $date2->getDifference($date, 'years', true)
+        );
+
+        $this->assertEquals(
+                -2.0,
+            $date2->getDifference($date, 'months', true)
+        );
+
+        $this->assertEquals(
+                -8.0,
+            $date2->getDifference($date, 'weeks', true)
+        );
+
+        $this->assertEquals(
+                -2.0,
+            $date2->getDifference($date, 'days', true)
+        );
+
+        $this->assertEquals(
+                -10.0,
+            $date2->getDifference($date, 'hours', true)
+        );
     }
-    
+
     public function testToString()
     {
         $date = new Date($this->time);
@@ -207,9 +253,9 @@ class DateObjectTest extends TestCase
     {
         $date = new Date($this->time);
 
-        $this->assertEquals('03/02/2026', $date->getOtherFormats('%d/%m/%Y'));
-        $this->assertEquals('02-03-2026', $date->getOtherFormats('%m-%d-%Y'));
-        $this->assertEquals('2026.02.03', $date->getOtherFormats('%Y.%m.%d'));
+        $this->assertEquals('03/02/2026', $date->getOtherFormats('d/m/Y'));
+        $this->assertEquals('02-03-2026', $date->getOtherFormats('m-d-Y'));
+        $this->assertEquals('2026.02.03', $date->getOtherFormats('Y.m.d'));
     }
 
     public function testCheckDate()
