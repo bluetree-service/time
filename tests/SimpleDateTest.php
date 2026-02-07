@@ -121,7 +121,7 @@ class SimpleDateTest extends TestCase
                 10 => 31,
                 11 => 30,
                 12 => 31,
-            ], 
+            ],
             $list
         );
 
