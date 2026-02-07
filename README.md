@@ -1,14 +1,6 @@
 Bluetree PSR-6 & PSR-16 time
 =============================
 
-[![Latest Stable Version](https://poser.pugx.org/bluetree-service/time/v/stable.svg?style=flat-square)](https://packagist.org/packages/bluetree-service/time)
-[![Total Downloads](https://poser.pugx.org/bluetree-service/time/downloads.svg?style=flat-square)](https://packagist.org/packages/bluetree-service/time)
-[![License](https://poser.pugx.org/bluetree-service/time/license.svg?style=flat-square)](https://packagist.org/packages/bluetree-service/time)
-
-[![Build Status](https://travis-ci.org/bluetree-service/time.svg?style=flat-square)](https://travis-ci.org/bluetree-service/time)
-[![Coverage Status](https://coveralls.io/repos/github/bluetree-service/time/badge.svg?style=flat-square&branch=master)](https://coveralls.io/github/bluetree-service/time?branch=master)
-[![Build Status](https://scrutinizer-ci.com/g/bluetree-service/time/badges/build.png?style=flat-square&b=master)](https://scrutinizer-ci.com/g/bluetree-service/time/build-status/master)
-[![Code Coverage](https://scrutinizer-ci.com/g/bluetree-service/time/badges/coverage.png?style=flat-square&b=master)](https://scrutinizer-ci.com/g/bluetree-service/time/?branch=master)
 
 [![Bugs](https://sonarcloud.io/api/project_badges/measure?project=bluetree-service_time&metric=bugs)](https://sonarcloud.io/summary/new_code?id=bluetree-service_time)
 [![Code Smells](https://sonarcloud.io/api/project_badges/measure?project=bluetree-service_time&metric=code_smells)](https://sonarcloud.io/summary/new_code?id=bluetree-service_time)
