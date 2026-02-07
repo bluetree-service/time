@@ -1,6 +1,9 @@
 Bluetree PSR-6 & PSR-16 time
 =============================
 
+[![Latest Stable Version](https://poser.pugx.org/bluetree-service/cache/v/stable.svg?style=flat-square)](https://packagist.org/packages/bluetree-service/cache)
+[![Total Downloads](https://poser.pugx.org/bluetree-service/cache/downloads.svg?style=flat-square)](https://packagist.org/packages/bluetree-service/cache)
+[![License](https://poser.pugx.org/bluetree-service/cache/license.svg?style=flat-square)](https://packagist.org/packages/bluetree-service/cache)
 
 [![Bugs](https://sonarcloud.io/api/project_badges/measure?project=bluetree-service_time&metric=bugs)](https://sonarcloud.io/summary/new_code?id=bluetree-service_time)
 [![Code Smells](https://sonarcloud.io/api/project_badges/measure?project=bluetree-service_time&metric=code_smells)](https://sonarcloud.io/summary/new_code?id=bluetree-service_time)
